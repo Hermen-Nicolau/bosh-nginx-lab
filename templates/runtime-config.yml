@@ -1,0 +1,19 @@
+---
+# Runtime config (add-on) template.
+# Replace every <placeholder> with your own values before uploading.
+releases:
+- name: os-conf
+  version: 23.0.0                    # never "latest"
+
+addons:
+- name: <addon-name>                 # provided by the instructor, e.g. jdoe-login-banner
+  jobs:
+  - name: login_banner
+    release: os-conf
+    properties:
+      login_banner:
+        text: |
+          <your unique banner text>
+  include:                           # placement rule: only your deployment gets this add-on
+    deployments:
+    - <deployment-name>

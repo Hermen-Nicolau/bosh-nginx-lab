@@ -1,0 +1,58 @@
+---
+# NGINX deployment manifest template.
+# Replace every <placeholder> with your own values before deploying.
+name: <deployment-name>              # provided by the instructor, e.g. jdoe-nginx
+
+releases:
+- name: nginx
+  version: "1.21.6"
+
+stemcells:
+- alias: default
+  os: ubuntu-jammy
+  version: latest
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  canary_watch_time: 1000-60000
+  update_watch_time: 1000-60000
+
+instance_groups:
+- name: nginx
+  instances: 1
+  azs: [<az>]                        # an AZ name from the cloud config
+  vm_type: <vm-type>                 # a VM type name from the cloud config
+  stemcell: default
+  networks:
+  - name: <network>                  # a network name from the cloud config
+  jobs:
+  - name: nginx
+    release: nginx
+    properties:
+      nginx_conf: |
+        worker_processes  1;
+        error_log /var/vcap/sys/log/nginx/error.log info;
+        events {
+          worker_connections 1024;
+        }
+        http {
+          include /var/vcap/packages/nginx/conf/mime.types;
+          default_type application/octet-stream;
+          sendfile on;
+          keepalive_timeout 65;
+          server {
+            listen 80;
+            server_name _;
+            access_log /var/vcap/sys/log/nginx/access.log;
+            root /var/vcap/data/nginx/document_root;
+            index index.html;
+          }
+        }
+      pre_start: |
+        #!/bin/bash -ex
+        NGINX_DIR=/var/vcap/data/nginx/document_root
+        mkdir -p $NGINX_DIR
+        cat > $NGINX_DIR/index.html <<HTML
+        <html><body><h1>Hello from <your-name>'s BOSH-deployed nginx</h1></body></html>
+        HTML
