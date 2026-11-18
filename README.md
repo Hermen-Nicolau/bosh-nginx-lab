@@ -14,7 +14,7 @@ In this lab you deploy your own one-instance NGINX server with BOSH on the OMA E
 
 | Item | What it is |
 | --- | --- |
-| [nginx-release](https://github.com/cloudfoundry-community/nginx-release) 1.21.6 | Provides the `nginx` job. `nginx_conf` (required) is the whole nginx.conf, and `pre_start` (optional) runs before nginx starts and writes the web page |
+| [nginx-release](https://github.com/cloudfoundry-community/nginx-release) | Provides the `nginx` job. `nginx_conf` (required) is the whole nginx.conf, and `pre_start` (optional) runs before nginx starts and writes the web page |
 | [os-conf-release](https://github.com/cloudfoundry/os-conf-release) 23.0.0 | Provides OS tweaks as BOSH jobs. Its `login_banner` job sets the text shown at SSH login |
 | `templates/nginx.yml` | The deployment manifest template |
 | `templates/runtime-config.yml` | The runtime config template |
@@ -37,8 +37,8 @@ cp ../nginx.yml ../runtime-config.yml .
 
 4. Look around the Director before you change anything. Find:
    - which deployments already exist
-   - which stemcells are uploaded (you need `ubuntu-jammy`)
-   - that the `nginx` and `os-conf` releases are there, and at which versions
+   - which stemcells are uploaded, and the exact version of the `ubuntu-jammy` one (you'll need it in Step 2)
+   - the `nginx` and `os-conf` releases, and the exact nginx version (you'll need it in Step 2)
    - the AZ, network and VM type names in the cloud config
 
 > **Think about:** Which three things does every BOSH deployment need?
@@ -52,6 +52,8 @@ Open your copy of `nginx.yml` in an editor (`vi` or `nano`) and **replace every 
 | Placeholder | Replace with |
 | --- | --- |
 | `<deployment-name>` | Your deployment name from the instructor |
+| `<nginx-release-version>` | The nginx release version uploaded to the Director. Find it yourself |
+| `<stemcell-version>` | The version of the uploaded `ubuntu-jammy` stemcell. Find it yourself |
 | `<az>` | The AZ from the instructor |
 | `<vm-type>` | The VM type from the instructor |
 | `<network>` | The network from the instructor |
@@ -65,12 +67,12 @@ name: <deployment-name>
 
 releases:
 - name: nginx
-  version: "1.21.6"
+  version: "<nginx-release-version>"
 
 stemcells:
 - alias: default
   os: ubuntu-jammy
-  version: latest
+  version: "<stemcell-version>"
 
 update:
   canaries: 1
@@ -118,7 +120,7 @@ instance_groups:
         HTML
 ```
 
-**Before you deploy**, make sure you can explain what each section does: `name`, `releases`, `stemcells`, `update`, `instance_groups`, and the job's `properties`. Then double-check that no `<placeholder>` is left, and that the indentation under each `|` is unchanged. YAML is strict about spaces.
+**Before you deploy**, make sure you can explain what each section does: `name`, `releases`, `stemcells`, `update`, `instance_groups`, and the job's `properties`. Keep the quotes around both versions. Then double-check that no `<placeholder>` is left, and that the indentation under each `|` is unchanged. YAML is strict about spaces.
 
 ---
 
@@ -236,7 +238,8 @@ Confirm neither shows up any more in the runtime configs or the deployments.
 
 | What you see | Where to look |
 | --- | --- |
-| Deploy fails: release or version doesn't exist | Compare your manifest's release name and version with `bosh releases` |
+| Deploy fails: release or version doesn't exist | Compare your manifest's release name and version with what the Director has uploaded |
+| Deploy fails: stemcell not found | The stemcell `os` and `version` must match an uploaded stemcell exactly |
 | Deploy fails: AZ, network or VM type not found | Names must match the cloud config exactly, and they're case-sensitive |
 | Deploy fails with a YAML error | Indentation, especially under `nginx_conf: \|`, `pre_start: \|` and `text: \|`. Is any `<placeholder>` left? |
 | Instance fails and nginx won't start | SSH in and read the nginx logs under `/var/vcap/sys/log/nginx/` |

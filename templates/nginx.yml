@@ -5,12 +5,12 @@ name: <deployment-name>              # provided by the instructor, e.g. jdoe-ngi
 
 releases:
 - name: nginx
-  version: "1.21.6"
+  version: "<nginx-release-version>" # find the uploaded version on the Director
 
 stemcells:
 - alias: default
   os: ubuntu-jammy
-  version: latest
+  version: "<stemcell-version>"      # find the uploaded version on the Director
 
 update:
   canaries: 1
